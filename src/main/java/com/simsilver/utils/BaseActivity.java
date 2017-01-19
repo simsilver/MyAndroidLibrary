@@ -239,4 +239,8 @@ public abstract class BaseActivity extends Activity implements MsgHandler {
     protected Handler getHandler() {
         return mHandler;
     }
+
+    protected Messenger getMessenger() {
+        return mMessenger;
+    }
 }

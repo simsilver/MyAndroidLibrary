@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
+import android.os.RemoteException;
 import android.support.v4.content.LocalBroadcastManager;
 
 import static com.simsilver.utils.Common.BIND_ACTION_LOCAL_BINDER;
@@ -64,7 +65,21 @@ public abstract class ExampleService extends Service implements MsgHandler {
         mLocalBroadcastManager.sendBroadcast(intent);
     }
 
+    protected boolean sendRemoteMessage(Messenger messenger, Message msg) {
+        try {
+            messenger.send(msg);
+            return true;
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     protected Handler getHandler() {
         return mHandler;
+    }
+
+    protected Messenger getMessenger() {
+        return mMessenger;
     }
 }
