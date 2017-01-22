@@ -1,6 +1,5 @@
 package com.simsilver.utils;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -18,11 +17,23 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.View;
 
+import static com.simsilver.utils.BaseActivity.SpecViewType.Content;
+import static com.simsilver.utils.BaseActivity.SpecViewType.DrawerLayout;
+import static com.simsilver.utils.BaseActivity.SpecViewType.Navigation;
+import static com.simsilver.utils.BaseActivity.SpecViewType.Toolbar;
 import static com.simsilver.utils.Common.BIND_ACTION_LOCAL_BINDER;
 import static com.simsilver.utils.Common.BIND_ACTION_MESSENGER;
 
@@ -30,7 +41,7 @@ import static com.simsilver.utils.Common.BIND_ACTION_MESSENGER;
  *
  */
 
-public abstract class BaseActivity extends Activity implements MsgHandler {
+public abstract class BaseActivity extends AppCompatActivity implements MsgHandler, NavigationView.OnNavigationItemSelectedListener {
 
     public static final int MSG_BIND_REMOTE_SERVICE_DONE = 0x100;
     public static final int MSG_UNBIND_REMOTE_SERVICE_DONE = MSG_BIND_REMOTE_SERVICE_DONE + 1;
@@ -41,6 +52,16 @@ public abstract class BaseActivity extends Activity implements MsgHandler {
     public static final int MSG_LOCAL_BROADCAST = _MSG_BASE_START_ + 1;
     public static final int _REQ_BASE_START_ = 0x2000;
 
+    public static final String OpenDrawer = "Open navigation drawer";
+    public static final String CloseDrawer = "Close navigation drawer";
+
+    protected enum SpecViewType {
+        Content,
+        Toolbar,
+        DrawerLayout,
+        Navigation
+    }
+
     private String mReqPermission = null;
     private int mReqCode = 0;
     private StaticHandler<BaseActivity> mHandler = null;
@@ -50,6 +71,12 @@ public abstract class BaseActivity extends Activity implements MsgHandler {
     private boolean mLocalServiceBound = false, mRemoteServiceBound = false;
 
     private ServiceConnection mLocalServiceConnection = null, mRemoteServiceConnection = null;
+
+
+    private Toolbar mToolbar = null;
+    private DrawerLayout mDrawer = null;
+
+    private NavigationView mNavigationView = null;
 
     private class RemoteMessengerServiceConnection implements ServiceConnection {
         @Override
@@ -118,6 +145,58 @@ public abstract class BaseActivity extends Activity implements MsgHandler {
         super.onCreate(savedInstanceState);
         mHandler = new StaticHandler<>(this);
         mMessenger = new Messenger(mHandler);
+
+        setContentView(getSpecViewId(Content));
+        findViews();
+        initViews();
+        int toolbarId = getSpecViewId(Toolbar);
+        View toolbar = null;
+        if (toolbarId > 0) {
+            toolbar = findViewById(toolbarId);
+        }
+        if (toolbar != null && toolbar instanceof Toolbar) {
+            mToolbar = (Toolbar) toolbar;
+            setSupportActionBar(mToolbar);
+            setupToolbar(getSupportActionBar());
+            int drawerId = getSpecViewId(DrawerLayout);
+            View drawer = null;
+            if (drawerId > 0) {
+                drawer = findViewById(drawerId);
+            }
+            if (drawer != null && drawer instanceof DrawerLayout) {
+                mDrawer = (DrawerLayout) drawer;
+                ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                        this, mDrawer, mToolbar,
+                        R.string.library_navigation_drawer_open,
+                        R.string.library_navigation_drawer_close);
+                mDrawer.addDrawerListener(toggle);
+                toggle.syncState();
+            }
+            int navigationId = getSpecViewId(Navigation);
+            View navigation = null;
+            if (navigationId > 0) {
+                navigation = findViewById(navigationId);
+            }
+            if (navigation != null && navigation instanceof NavigationView) {
+                mNavigationView = (NavigationView) navigation;
+                mNavigationView.setNavigationItemSelectedListener(this);
+            }
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (mDrawer != null && mDrawer.isDrawerOpen(GravityCompat.START)) {
+            mDrawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    protected void closeDrawer() {
+        if (mDrawer != null) {
+            mDrawer.closeDrawer(GravityCompat.START);
+        }
     }
 
     protected boolean regLocalMsgReceiver() {
@@ -243,4 +322,12 @@ public abstract class BaseActivity extends Activity implements MsgHandler {
     protected Messenger getMessenger() {
         return mMessenger;
     }
+
+    protected abstract int getSpecViewId(SpecViewType type);
+
+    protected abstract void findViews();
+
+    protected abstract void initViews();
+
+    protected abstract void setupToolbar(ActionBar toolbar);
 }
