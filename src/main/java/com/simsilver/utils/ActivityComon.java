@@ -157,4 +157,8 @@ public class ActivityComon {
     public static boolean isMediaDocument(Uri uri) {
         return "com.android.providers.media.documents".equals(uri.getAuthority());
     }
+
+    public static void showToast(Activity activity, String toast) {
+        Toast.makeText(activity, toast, Toast.LENGTH_SHORT).show();
+    }
 }
