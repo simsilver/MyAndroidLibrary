@@ -3,6 +3,7 @@ package com.simsilver.utils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Locale;
 
 /**
  *
@@ -22,5 +23,9 @@ public class Common {
         }
         in.close();
         out.close();
+    }
+
+    public static String format(String s, Object...args) {
+        return String.format(Locale.getDefault(), s, args);
     }
 }

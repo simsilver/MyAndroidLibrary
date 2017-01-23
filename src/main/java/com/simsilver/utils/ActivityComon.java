@@ -96,6 +96,13 @@ public class ActivityComon {
         else if ("file".equalsIgnoreCase(uri.getScheme())) {
             return uri.getPath();
         }
+        // "/storage/xxx"
+        else {
+            String path = uri.getPath();
+            if (path.startsWith("/")) {
+                return path;
+            }
+        }
 
         return null;
     }
