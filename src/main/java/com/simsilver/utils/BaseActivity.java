@@ -17,6 +17,7 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.support.annotation.NonNull;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -30,6 +31,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 
+import static com.simsilver.utils.BaseActivity.SpecViewType.CollapseToolbar;
 import static com.simsilver.utils.BaseActivity.SpecViewType.Content;
 import static com.simsilver.utils.BaseActivity.SpecViewType.DrawerLayout;
 import static com.simsilver.utils.BaseActivity.SpecViewType.Navigation;
@@ -52,12 +54,10 @@ public abstract class BaseActivity extends AppCompatActivity implements MsgHandl
     public static final int MSG_LOCAL_BROADCAST = _MSG_BASE_START_ + 1;
     public static final int _REQ_BASE_START_ = 0x2000;
 
-    public static final String OpenDrawer = "Open navigation drawer";
-    public static final String CloseDrawer = "Close navigation drawer";
-
     protected enum SpecViewType {
         Content,
         Toolbar,
+        CollapseToolbar,
         DrawerLayout,
         Navigation
     }
@@ -74,6 +74,7 @@ public abstract class BaseActivity extends AppCompatActivity implements MsgHandl
 
 
     private Toolbar mToolbar = null;
+    private CollapsingToolbarLayout mCollapseToolbar = null;
     private DrawerLayout mDrawer = null;
 
     private NavigationView mNavigationView = null;
@@ -158,6 +159,17 @@ public abstract class BaseActivity extends AppCompatActivity implements MsgHandl
             mToolbar = (Toolbar) toolbar;
             setSupportActionBar(mToolbar);
             setupToolbar(getSupportActionBar());
+
+            int collapse_toolbarId = getSpecViewId(CollapseToolbar);
+            View collapse_toolbar = null;
+            if (collapse_toolbarId > 0) {
+                collapse_toolbar = findViewById(collapse_toolbarId);
+            }
+            if (collapse_toolbar != null && collapse_toolbar instanceof CollapsingToolbarLayout) {
+                mCollapseToolbar = (CollapsingToolbarLayout) collapse_toolbar;
+                mCollapseToolbar.setTitleEnabled(false);
+            }
+
             int drawerId = getSpecViewId(DrawerLayout);
             View drawer = null;
             if (drawerId > 0) {
@@ -172,6 +184,7 @@ public abstract class BaseActivity extends AppCompatActivity implements MsgHandl
                 mDrawer.addDrawerListener(toggle);
                 toggle.syncState();
             }
+
             int navigationId = getSpecViewId(Navigation);
             View navigation = null;
             if (navigationId > 0) {
